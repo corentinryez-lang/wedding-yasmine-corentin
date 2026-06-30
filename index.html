@@ -610,7 +610,7 @@ main{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:0 24px}
         <div class="rsvp-cond hidden" id="rsvpCond">
           <div class="rsvp-cond-inner">
             <div class="rsvp-group"><label class="rsvp-lbl" for="rNb">Nombre de personnes</label><select class="rsvp-select" id="rNb"><option value="">S&eacute;lectionnez&hellip;</option><option value="1">1 personne</option><option value="2">2 personnes</option><option value="3">3 personnes</option><option value="4">4 personnes</option></select></div>
-            <div class="rsvp-group"><label class="rsvp-lbl" for="rRegime">R&eacute;gime alimentaire</label><select class="rsvp-select" id="rRegime"><option value="aucun">Aucun</option><option value="vege">V&eacute;g&eacute;tarien</option><option value="vegan">Vegan</option><option value="halal">Halal</option><option value="allergie">Allergie (pr&eacute;ciser ci-dessous)</option></select></div>
+            <div class="rsvp-group"><label class="rsvp-lbl" for="rMoments">Vous serez des n&ocirc;tres pour&nbsp;:</label><select class="rsvp-select" id="rMoments"><option value="">S&eacute;lectionnez&hellip;</option><option value="mairie_soiree">La mairie et la soir&eacute;e</option><option value="mairie">La mairie uniquement</option><option value="soiree">La soir&eacute;e uniquement</option></select></div>
             <div class="rsvp-group"><label class="rsvp-lbl" for="rMsg">Un mot pour les mari&eacute;s&nbsp;<span style="opacity:.55;font-size:.9em">(optionnel)</span></label><textarea class="rsvp-textarea" id="rMsg" placeholder="Un message, une question&hellip;"></textarea></div>
           </div>
         </div>
@@ -745,6 +745,44 @@ window.submitRSVP=function(){
   if(!pr||!nm){alert('Merci de renseigner votre pr\u00e9nom et nom.');return;}
   if(!em||!em.includes('@')){alert('Merci de renseigner un email valide.');return;}
   if(!presence){alert('Merci d\u2019indiquer votre pr\u00e9sence.');return;}
+
+  var nb=document.getElementById('rNb')?document.getElementById('rNb').value:'';
+  var moments=document.getElementById('rMoments')?document.getElementById('rMoments').value:'';
+  var msg=document.getElementById('rMsg')?document.getElementById('rMsg').value.trim():'';
+
+  var submitBtn=document.querySelector('.btn-submit');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='Envoi en cours\u2026';}
+
+  var momentsLabel={
+    mairie_soiree:'Mairie et soir\u00e9e',
+    mairie:'Mairie uniquement',
+    soiree:'Soir\u00e9e uniquement'
+  }[moments] || '-';
+
+  var payload={
+    Pr\u00e9nom:pr,
+    Nom:nm,
+    Email:em,
+    Pr\u00e9sence:presence==='oui'?'Sera pr\u00e9sent(e)':'Ne pourra pas venir',
+    'Nombre de personnes':nb||'-',
+    'Moments pr\u00e9sents':momentsLabel,
+    Message:msg||'-'
+  };
+
+  fetch('https://formspree.io/f/xdarldqz',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(function(res){
+    if(!res.ok){throw new Error('Erreur d\u2019envoi');}
+    showRSVPConfirmation(pr);
+  }).catch(function(){
+    if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='Envoyer ma r\u00e9ponse \u2726';}
+    alert('Une erreur est survenue lors de l\u2019envoi. Merci de r\u00e9essayer, ou de nous contacter directement.');
+  });
+};
+
+function showRSVPConfirmation(pr){
   document.getElementById('rsvpForm').style.display='none';
   var cf=document.getElementById('rsvpConfirm');cf.classList.add('show');
   if(presence==='oui'){
@@ -754,7 +792,7 @@ window.submitRSVP=function(){
     document.getElementById('rsvpH').textContent='Merci de nous avoir pr\u00e9venus, '+pr+'.';
     document.getElementById('rsvpB').innerHTML='Votre r\u00e9ponse a bien \u00e9t\u00e9 enregistr\u00e9e.<br>Vous serez avec nous dans nos pens\u00e9es en ce beau jour.\u00a0\u2665';
   }
-};
+}
 
 
 /* ════ POÈME — matérialisation en poussière dorée ════
@@ -763,7 +801,7 @@ window.submitRSVP=function(){
    simple fondu. Ligne par ligne, mot par mot, avec un système de
    particules canvas synchronisé à l'apparition de chaque mot. */
 (function(){
-  var poemLines = ["Nos chemins se sont croisés, sans bruit, sans détour,", "Et dès les premiers mots, simples et évidents,", "Nos échanges coulaient, sans hâte ni tourment,", "Le courant est passé entre nous, sans retour.", "", "Autour de nous déjà, les cœurs avaient compris,", "On murmurait nos noms, tant cela semblait clair.", "Pourtant nous ne voulions y voir qu’une affaire,", "Et de nous voir si proches, nous en étions surpris.", "", "Et puis vint le temps du doute et de la distance,", "Le manque s’est installé, discret puis grandissant.", "Chaque adieu nous pesait un peu plus, à présent,", "Nous prouvait chaque jour notre vive espérance.", "", "De Tunis à Paris, commença le voyage,", "Un avion, un autre encore, villes mêlées,", "Tu es venu chercher, dans mes terres aimées,", "Ce que nos cœurs savaient déjà, sans nul partage.", "", "Et nous voilà, debout, prêts à bâtir ensemble", "Une maison de mots, de rires et d’amour.", "Et ce mariage nous unira toujours,", "Ce lien tissé du temps, ce lien qui nous ressemble."];
+  var poemLines = ["Nous n’étions deux amis que le temps d’un beau jour,", "Sans savoir qu’à deux, on inventait une vie,", "Le temps s’est arrêté, comme une mélodie,", "Et l’amitié, déjà, ressemblait à l’amour.", "", "Autour de nous, déjà, on devinait l’histoire,", "On nous taquinait bien, mais on n’y croyait pas.", "Pourtant, nous éloigner semblait un vrai tracas,", "Tant nous voulions sans fin nous connaître, et y croire.", "", "Nos mots sont devenus, peu à peu, plus mutins,", "Alors on a voulu, sans attendre, se voir.", "De Paris à Tunis, on a fait le chemin,", "Et Tunis vers Paris, en retour, un beau soir.", "", "Et puis, un beau jour, on a compris l’évidence :", "Faits l’un pour l’autre, en toute simple confiance.", "Sans plus attendre alors, on a voulu, ce jour,", "Se marier, et s’aimer, sans fin, pour toujours."];
   var poemEl = document.getElementById('poem');
   var dustCanvas = document.getElementById('poemDust');
   if(!poemEl || !dustCanvas) return;
